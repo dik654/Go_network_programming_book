@@ -7,7 +7,7 @@ import (
 )
 
 func TestDial(t *testing.T) {
-	//임의의 포트로 바인딩하여 리스너 생성
+	// 임의의 포트로 바인딩하여 리스너 생성
 	listener, err := net.Listen("tcp", "127.0.0.1:")
 	// 리스너 생성 성공 여부 테스트
 	if err != nil {
