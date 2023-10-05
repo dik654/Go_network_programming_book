@@ -12,7 +12,7 @@ import (
 func TestDeadline(t *testing.T) {
 	sync := make(chan struct{})
 	// TCP 리스너 생성
-	listener, err := net.Listen("tcp", "128.0.0.1:")
+	listener, err := net.Listen("tcp", "127.0.0.1:")
 	if err != nil {
 		t.Fatal(err)
 	}

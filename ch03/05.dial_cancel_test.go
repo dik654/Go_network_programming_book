@@ -2,6 +2,7 @@
 package ch03
 
 import (
+	"context"
 	"net"
 	"syscall"
 	"testing"
@@ -45,7 +46,7 @@ func TestDialContextCancel(t *testing.T) {
 	<-sync
 
 	// 컨텍스트의 에러 사유가 cancel이 아니라면 에러 리턴
-	if ctx.Err() != context.Cancel {
+	if ctx.Err() != context.Canceled {
 		t.Errorf("expect canceld context; actual: %q", ctx.Err())
 	}
 }

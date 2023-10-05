@@ -6,6 +6,7 @@ import (
 	"net"
 	"syscall"
 	"testing"
+	"time"
 )
 
 func TestDialContext(t *testing.T) {
@@ -18,7 +19,7 @@ func TestDialContext(t *testing.T) {
 	var d net.Dialer
 	// Control 함수 따로 설정하는 방법
 	d.Control = func(_, _ string, _ syscall.RawConn) error {
-		time.Sleep(5*time.Second + time.Milisecond)
+		time.Sleep(5*time.Second + time.Millisecond)
 		return nil
 	}
 
