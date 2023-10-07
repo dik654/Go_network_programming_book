@@ -21,7 +21,7 @@ func TestDial(t *testing.T) {
 		defer func() { done <- struct{}{} }()
 
 		for {
-			// 리스너와 고루틴간의 연결 수립
+			// 리스너와 고루틴간의 연결 수락 대기
 			conn, err := listener.Accept()
 			if err != nil {
 				t.Log(err)
@@ -55,7 +55,7 @@ func TestDial(t *testing.T) {
 
 		}
 	}()
-	// tcp 연결객체 리턴
+	// 서버에 연결 tcp 연결 시도 후 연결된 객체 리턴
 	conn, err := net.Dial("tcp", listener.Addr().String())
 	if err != nil {
 		t.Fatal(err)
