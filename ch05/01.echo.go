@@ -1,57 +1,49 @@
+// 송신자가 보낸 UDP 패킷을 echo해주는 UDP server
 package echo
 
 import (
 	"context"
+	"fmt"
 	"net"
 )
 
-func streamingEchoServer(ctx context.Context, network string, addr string) (net.Addr, error) {
-	// addr 주소로 서버 생성
-	// network에 tcp가 아닌 unix, unixpacket으로 유닉스 소켓 연결 가능
-	s, err := net.Listen(network, addr)
+func echoServerUDP(ctx context.Context, addr string) (net.Addr, error) {
+	// UDP 리스너 생성
+	// addr로 들어오는 패킷을 읽음
+	s, err := net.ListenPacket("udp", addr)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("binding to udp %s: %w", addr, err)
 	}
 
-	// 고루틴 생성
+	// 리스너 생성에 성공했다면 고루틴 생성
 	go func() {
-		// 새로운 고루틴을 생성해서 컨텍스트 취소 시 리스너를 닫도록 대기시킴
+		// 추가 고루틴을 생성하여
 		go func() {
-			// 컨텍스트 취소 시
+			// 컨텍스트가 종료될 때까지 대기
 			<-ctx.Done()
-			// 리스너 닫기
+			// 컨텍스트가 종료됐다면 리스너 닫기
 			_ = s.Close()
 		}()
 
+		// 1KB 버퍼 생성
+		buf := make([]byte, 1024)
+
 		for {
-			// 리스너 연결 준비 완료가 되면
-			conn, err := s.Accept()
+			// 리스너에서 데이터를 읽어서 버퍼에 저장
+			// clientAddr는 데이터를 보낸 송신자
+			n, clientAddr, err := s.ReadFrom(buf)
 			if err != nil {
 				return
 			}
 
-			// 고루틴을 생성해서
-			go func() {
-				defer func() { _ = conn.Close() }()
-
-				for {
-					// 1KB 버퍼를 생성하여
-					buf := make([]byte, 1024)
-					// 서버로부터 데이터를 읽어 버퍼에 쓰고
-					n, err := conn.Read(buf)
-					if err != nil {
-						return
-					}
-					// 버퍼에 썼던 데이터를 서버에 쓰기를 반복
-					_, err = conn.Write(buf[:n])
-					if err != nil {
-						return
-					}
-				}
-			}()
+			// 읽은 데이터를 송신자(clientAddr)에게 쓰기
+			_, err = s.WriteTo(buf[:n], clientAddr)
+			if err != nil {
+				return
+			}
 		}
 	}()
 
-	// 컨텍스트 취소시 서버의 주소를 리턴하고 종료
-	return s.Addr(), nil
+	// 고루틴 생성과 관계없이 즉시 UDP 리스너의 주소 리턴
+	return s.LocalAddr(), nil
 }
