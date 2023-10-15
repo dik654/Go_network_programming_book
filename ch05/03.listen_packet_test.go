@@ -89,7 +89,7 @@ func TestListenPacketUDP(t *testing.T) {
 
 	// 서버에서 온 데이터가 아니라면
 	if addr.String() != serverAddr.String() {
-		에러
+		// 에러
 		t.Errorf("expected message from %q; actual sender is %q", serverAddr, addr)
 	}
 }
