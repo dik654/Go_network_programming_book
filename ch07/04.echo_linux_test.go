@@ -70,7 +70,7 @@ func TestEchoServerUnixPacket(t *testing.T) {
 	}
 
 	// ping 3개 더 보내기
-	for i := 0; i < 3; i++ { // write 3 more "ping" messages
+	for i := 0; i < 3; i++ {
 		_, err = conn.Write(msg)
 		if err != nil {
 			t.Fatal(err)
@@ -90,52 +90,6 @@ func TestEchoServerUnixPacket(t *testing.T) {
 		if !bytes.Equal(msg[:2], buf[:n]) {
 			t.Errorf("expected reply %q; actual reply %q", msg[:2],
 				buf[:n])
-		}
-	}
-}
-
-func BenchmarkEchoServerUnixPacket(b *testing.B) {
-	dir, err := os.MkdirTemp("", "echo_unixpacket_bench")
-	if err != nil {
-		b.Fatal(err)
-	}
-	defer func() {
-		if rErr := os.RemoveAll(dir); rErr != nil {
-			b.Error(rErr)
-		}
-	}()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	socket := filepath.Join(dir, fmt.Sprintf("%d.sock", os.Getpid()))
-	rAddr, err := streamingEchoServer(ctx, "unixpacket", socket)
-	if err != nil {
-		b.Fatal(err)
-	}
-	defer cancel()
-
-	conn, err := net.Dial("unixpacket", rAddr.String())
-	if err != nil {
-		b.Fatal(err)
-	}
-	defer func() { _ = conn.Close() }()
-
-	msg := []byte("ping")
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_, err = conn.Write(msg)
-		if err != nil {
-			b.Fatal(err)
-		}
-
-		buf := make([]byte, 1024)
-		n, err := conn.Read(buf)
-		if err != nil {
-			b.Fatal(err)
-		}
-
-		if !bytes.Equal(msg, buf[:n]) {
-			b.Fatalf("expected reply %q; actual reply %q", msg, buf[:n])
 		}
 	}
 }
