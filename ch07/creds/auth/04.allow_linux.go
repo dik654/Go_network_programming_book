@@ -8,6 +8,7 @@ import (
 	"net"
 	"os/user"
 
+	// window 환경에서 사용불가
 	"golang.org/x/sys/unix"
 )
 

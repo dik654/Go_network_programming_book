@@ -8,9 +8,10 @@ import (
 	"os"
 )
 
+// Unix Stream Socket
 func streamingEchoServer(ctx context.Context, network string, addr string) (net.Addr, error) {
 	// addr 주소로 서버 생성
-	// network에 tcp가 아닌 unix, unixpacket으로 유닉스 소켓 연결 가능
+	// network에 unix 유닉스 소켓 연결 가능
 	s, err := net.Listen(network, addr)
 	if err != nil {
 		return nil, err
@@ -27,7 +28,10 @@ func streamingEchoServer(ctx context.Context, network string, addr string) (net.
 		}()
 
 		for {
-			// 리스너 연결 준비 완료가 되면
+			// 리스너 연결 준비 완료
+			// streaming 방식은 데이터를 보내기 전에
+			// 먼저 클라이언트와 연결한다
+			// 데이터의 순서나 신뢰성이 보장된다
 			conn, err := s.Accept()
 			if err != nil {
 				return
@@ -59,6 +63,7 @@ func streamingEchoServer(ctx context.Context, network string, addr string) (net.
 	return s.Addr(), nil
 }
 
+// Unix Datagram Socket
 func datagramEchoServer(ctx context.Context, network string, addr string) (net.Addr, error) {
 	// 인수로 들어온 네트워킹 타입에 맞게 리스너 생성
 	s, err := net.ListenPacket(network, addr)
@@ -83,6 +88,8 @@ func datagramEchoServer(ctx context.Context, network string, addr string) (net.A
 
 		// 1KB 버퍼 생성
 		buf := make([]byte, 1024)
+		// streaming과 달리 클라이언트와 연결을 하는 과정이 없다
+		// 데이터의 순서나 신뢰성이 보장되지 않을 수 있다
 		for {
 			// 리스너에 데이터가 들어오면 버퍼에 저장
 			n, clientAddr, err := s.ReadFrom(buf)
