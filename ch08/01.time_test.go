@@ -9,11 +9,13 @@ import (
 func TestHeadTime(t *testing.T) {
 	// http://www.time.gov에 http 헤더만 받아오기
 	resp, err := http.Head("http://www.time.gov")
+	// 아직 바디를 읽지 않은 상태여서 바디는 소비되지않고 남아있는 상태
+	// 이 상태에서는 TCP 세션 재사용 불가
 	if err != nil {
 		t.Fatal(err)
 	}
-	// http 연결이 아직 끊어지지 않았을 수 있으므로
 	// 응답을 명시적으로 닫기
+	// 바디를 닫으면 읽지 않은 바이트를 자동으로 소비하여 TCP 세션 재사용 가능
 	_ = resp.Body.Close()
 
 	// 초 단위까지 끊어서 현재 시간 now 변수에 저장
